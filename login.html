@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <link rel="stylesheet" type="text/css" href="dist/css-JS-A/styled.css">
+</head>
+<body>
+  <div id="login-container">
+    <h2 style="color: white;">Login</h2>
+    <form id="login-form">
+      <input type="text" id="username" name="username" placeholder="Username" required><br>
+      <input type="password" id="password" name="password" placeholder="Password" required><br>
+      <input type="submit" id="login-submit" value="Login">
+      <div id="login-message" style="color: white;"></div>
+    </form>
+    <div class="separator">
+      <span class="or">OR</span>
+    </div>
+    <button id="login-with-google" class="login-with-google">Login with Google</button>
+    <div class="separator">
+      <span class="or">Don't have an account?</span>
+    </div>
+    <a href="signup.html">Sign Up</a>
+  </div>
+  <script src="dist/css-JS-A/code.js"></script>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent default form submission
+      
+      // Get form data
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      // Hash the password using SHA-256 algorithm
+      const hashedPassword = sha256(password);
+      
+      // Send form data to server for authentication
+      fetch('/authenticate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username: username, password: hashedPassword })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Redirect to the dashboard or another authenticated page
+          window.location.href = '/dashboard.html';
+        } else {
+          document.getElementById('login-message').textContent = data.message;
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Handle errors
+      });
+    });
+
+    // SHA-256 hashing function
+    function sha256(message) {
+      // Returns a promise that resolves with the hash as a hex-encoded string
+      return crypto.subtle.digest('SHA-256', new TextEncoder().encode(message))
+        .then(hash => {
+          return Array.prototype.map.call(new Uint8Array(hash), bit => {
+            return ('00' + bit.toString(16)).slice(-2);
+          }).join('');
+        });
+    }
+  </script>
+</body>
+</html>

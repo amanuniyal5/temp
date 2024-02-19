@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up Page</title>
+  <link rel="stylesheet" type="text/css" href="dist/css-JS-A/styled.css">
+</head>
+<body>
+  <div id="signup-container">
+    <h2 style="color: white;">Sign Up</h2>
+    <form id="signup-form">
+      <input type="text" id="username" name="username" placeholder="Username" required><br>
+      <input type="text" id="name" name="name" placeholder="Name" required><br>
+      <input type="email" id="email" name="email" placeholder="Email" required><br>
+      <input type="password" id="password" name="password" placeholder="Password" required><br>
+      <div class="confirm-password-container">
+        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm Password" required>
+        <span id="confirm-password-check"></span>
+      </div>
+      <input type="submit" value="Sign Up">
+    </form>
+    <div class="separator">
+      <span class="or">OR</span>
+    </div>
+    <button id="signup-with-google" class="login-with-google">Sign Up with Google</button>
+    <div class="separator">
+      <span class="or">Already have an account?</span>
+    </div>
+    <a href="login.html">Login</a>
+  </div>
+  <script src="dist/css-JS-A/code.js"></script>
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent default form submission
+      
+      // Get form data
+      const username = document.getElementById('username').value;
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      
+      // Validate password and confirm password
+      if (password !== confirmPassword) {
+          alert("Password and Confirm Password do not match.");
+          return;
+      }
+
+      // Hash the password using SHA-256 algorithm
+      const hashedPassword = sha256(password);
+      
+      // Construct payload
+      const payload = {
+          username: username,
+          name: name,
+          email: email,
+          password: hashedPassword // Send hashed password to the server
+      };
+      
+      // Send payload to backend (you may use fetch or other AJAX methods)
+      fetch('/signup', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ token: payload })
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          return response.json();
+      })
+      .then(data => {
+          console.log('Response from server:', data);
+          // Handle successful response
+          alert("Signup successful!");
+          // Optionally, redirect the user to another page
+          // window.location.href = '/success.html';
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          // Handle errors
+          alert("There was an error during signup. Please try again.");
+      });
+  });
+
+  // SHA-256 hashing function
+  function sha256(message) {
+      // Returns a promise that resolves with the hash as a hex-encoded string
+      return crypto.subtle.digest('SHA-256', new TextEncoder().encode(message))
+          .then(hash => {
+              return Array.prototype.map.call(new Uint8Array(hash), bit => {
+                  return ('00' + bit.toString(16)).slice(-2);
+              }).join('');
+          });
+  }
+  </script>
+</body>
+</html>
